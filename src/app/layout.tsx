@@ -13,7 +13,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ratio Budget | Control Your Spending",
+  title: "Better Budget | Control Your Spending",
   description: "A professional budgeting tool using 50-30-20 and 65-20-15 ratios to optimize your personal finances.",
 };
 

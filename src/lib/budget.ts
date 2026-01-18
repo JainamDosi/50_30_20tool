@@ -57,6 +57,8 @@ export interface CalculationResult {
     totalSpent: number;
     remaining: number;
     income: number;
+    expensesTotal: number;
+    totalActualSavings: number;
     breakdown: {
         needs: number;
         wants: number;
@@ -117,8 +119,17 @@ export function calculateBudget(data: BudgetData, filterMonth?: number, filterYe
         return acc;
     }, { needs: 0, wants: 0, savings: 0, excess: 0 });
 
-    const totalSpent = breakdown.needs + breakdown.wants + breakdown.savings + breakdown.excess;
-    const remaining = effectiveIncome - totalSpent;
+    const expensesTotal = breakdown.needs + breakdown.wants + breakdown.excess;
+    // User: "why does savings count as money ouflow and also in spent"
+    // So Total Spent should ONLY be expenses (money gone).
+    const totalSpent = expensesTotal;
+
+    // Total Allocated includes savings for remaining calculation
+    const totalAllocated = expensesTotal + breakdown.savings;
+    const remaining = effectiveIncome - totalAllocated;
+
+    // User: "if the month ends and some money is still left ... thats also savings"
+    const totalActualSavings = breakdown.savings + (remaining > 0 ? remaining : 0);
 
     const ideal = {
         income: effectiveIncome,
@@ -130,17 +141,17 @@ export function calculateBudget(data: BudgetData, filterMonth?: number, filterYe
     const percentages = {
         needs: effectiveIncome > 0 ? (breakdown.needs / effectiveIncome) * 100 : 0,
         wants: effectiveIncome > 0 ? (breakdown.wants / effectiveIncome) * 100 : 0,
-        savings: effectiveIncome > 0 ? (breakdown.savings / effectiveIncome) * 100 : 0,
+        savings: effectiveIncome > 0 ? (totalActualSavings / effectiveIncome) * 100 : 0, // Use totalActualSavings for percentage
         excess: effectiveIncome > 0 ? (breakdown.excess / effectiveIncome) * 100 : 0,
     };
 
     const deviations = {
         needs: breakdown.needs - ideal.needs,
         wants: (breakdown.wants + breakdown.excess) - ideal.wants,
-        savings: breakdown.savings - ideal.savings,
+        savings: breakdown.savings - ideal.savings, // Use explicit savings for Goal Tracking variance
     };
 
-    const savingsRate = effectiveIncome > 0 ? (breakdown.savings / effectiveIncome) * 100 : 0;
+    const savingsRate = effectiveIncome > 0 ? (totalActualSavings / effectiveIncome) * 100 : 0;
 
     let score = 100;
     if (effectiveIncome > 0) {
@@ -159,6 +170,8 @@ export function calculateBudget(data: BudgetData, filterMonth?: number, filterYe
         totalSpent,
         remaining,
         income: effectiveIncome,
+        expensesTotal,
+        totalActualSavings,
         breakdown,
         percentages,
         ideal,

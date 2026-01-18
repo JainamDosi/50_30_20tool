@@ -84,6 +84,15 @@ body {
   background: var(--primary-emerald);
 }
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Mesh Gradients */
 .mesh-bg {
   position: absolute;
