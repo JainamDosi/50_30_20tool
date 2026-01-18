@@ -13,6 +13,7 @@ import { ExpenseTable } from '@/components/ExpenseTable';
 import { StatCard } from '@/components/StatCard';
 import { ProgressBar } from '@/components/ProgressBar';
 import { VarianceRow } from '@/components/VarianceRow';
+import { ConfirmationModal } from '@/components/ConfirmationModal';
 import dynamic from 'next/dynamic';
 import {
     TrendingUp, Activity,
@@ -67,6 +68,7 @@ export function Dashboard({
     currencySymbol,
     handleIncomeChange
 }: DashboardProps) {
+    const [showClearConfirm, setShowClearConfirm] = React.useState(false);
 
     const addExpense = (newExpense: Omit<Expense, 'id'>) => {
         const expense: Expense = { ...newExpense, id: crypto.randomUUID() };
@@ -113,11 +115,7 @@ export function Dashboard({
                 setMode={(m) => setData((prev: any) => ({ ...prev, mode: m }))}
                 currency={data.currency}
                 setCurrency={(c) => setData((prev: any) => ({ ...prev, currency: c }))}
-                onClearData={() => {
-                    if (confirm('Delete all data? This cannot be undone.')) {
-                        setData({ income: 0, monthlyIncomes: {}, expenses: [], mode: '50-30-20', currency: 'USD' });
-                    }
-                }}
+                onClearData={() => setShowClearConfirm(true)}
             />
 
             <main className="max-w-7xl mx-auto px-4 md:px-8 pt-6 md:pt-8 space-y-8 md:space-y-12 animate-fade-in uppercase">
@@ -457,6 +455,16 @@ export function Dashboard({
                     </aside>
                 </div>
             </main>
+
+            <ConfirmationModal
+                isOpen={showClearConfirm}
+                onClose={() => setShowClearConfirm(false)}
+                onConfirm={() => {
+                    setData({ income: 0, monthlyIncomes: {}, expenses: [], mode: '50-30-20', currency: 'USD' });
+                }}
+                title="CLEAR ALL DATA"
+                message="Are you sure you want to delete all your budget data? This action cannot be undone and you will lose all tracking history."
+            />
         </motion.div>
     );
 }
